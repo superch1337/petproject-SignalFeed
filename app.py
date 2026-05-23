@@ -4,9 +4,10 @@ from fastapi import FastAPI, HTTPException
 from services.hackernews import get_top_posts
 from services.ai import analyze_post, analyze_trends
 from utils.cache import get_cache, set_cache
-from utils.db import (
+from authlib.integrations.starlette_client import OAuth
+from fastapi import Request
+from utils.crud import (
     save_user,
-    init_db,
     get_posts_from_db,
     save_trend,
     save_posts,
@@ -15,12 +16,14 @@ from utils.db import (
     get_favorites,
     delete_favorite,
 )
-from authlib.integrations.starlette_client import OAuth
-from fastapi import Request
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from authlib.integrations.base_client.errors import OAuthError
+from utils.db import engine
+from utils.models import Base
+
+Base.metadata.create_all(bind=engine)
 
 load_dotenv()
 
@@ -39,8 +42,6 @@ app.add_middleware(
     secret_key="super-secret-key",
     same_site="lax",
 )
-
-init_db()
 
 
 oauth = OAuth()
